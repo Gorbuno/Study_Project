@@ -1,0 +1,81 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+#define Key 35129
+#define SIZE  100000
+struct HT_Param { ;
+    int article;
+    int fabricator;
+    float price;
+};
+struct HT {
+    int volume;
+    HT_Param *parameters;
+};
+int Flag (int x){return x % Key;}
+void nul_HT (HT * hash_table){
+    for (int i=0; i< Key; i++){
+        hash_table[i].volume=0;
+        hash_table[i].parameters = nullptr;
+    }
+}
+void create_HT_Param (HT_Param * curr_table, int curr_article, int curr_fabricator, float curr_price ){
+    curr_table -> article = curr_article;
+    curr_table -> price = curr_price;
+    curr_table -> fabricator = curr_fabricator;
+}
+void add_HT (HT * new_table, HT_Param new_param){
+    size_t flag = Flag (new_param.article);
+    if (new_table[flag].parameters == nullptr){
+        new_table[flag].parameters = (HT_Param *) malloc(sizeof (HT_Param));
+        new_table[flag]. parameters[0] = new_param;
+        new_table[flag].volume = 1; }
+    else {
+        new_table[flag].volume +=1;
+        new_table[flag].parameters = (HT_Param *) realloc (new_table[flag].parameters, sizeof (HT_Param) * (new_table[flag].volume));
+        new_table[flag].parameters[new_table[flag].volume-1]=new_param;}}
+void search(HT * ht, size_t user_article){
+    int flag_user_article = Flag(user_article);
+    if (ht[flag_user_article].parameters == nullptr){
+        cout << "No elements";
+        return;}
+    else {
+        for(int i=0;i < ht[flag_user_article].volume; i++){
+            if (ht[flag_user_article].parameters[i].article == user_article){
+                cout << "Price: " << ht[flag_user_article].parameters[i].price << endl;
+                cout << "Fabricator: "<< ht[flag_user_article].parameters[i].fabricator << endl;
+                return;}}}
+    cout << "No element";}
+void row_len (HT * ht, int * arr){
+    int border = (SIZE / Key) + 5;
+    for (int i=0; i < border; i++)
+        arr[i] = 0;
+    for (int i=0; i < Key; i++){
+        if (ht[i].parameters != nullptr)
+            arr[ht[i].volume]+=1;
+        else arr[0]+=1;}}
+int main() {
+    HT * Hash_Table;
+    ifstream file;
+    file.open("ads_lab2.txt");
+    int user_article, article, fabricator;
+    int array[SIZE];
+    float price;
+    Hash_Table = (HT *) malloc(sizeof (HT)*Key);
+    nul_HT(Hash_Table);
+    for (int i=0; i< SIZE; i++){
+        file >> article;
+        file >> price;
+        file >> fabricator;
+        HT_Param new_param;
+        create_HT_Param(&new_param, article, fabricator, price);
+        add_HT(Hash_Table, new_param);}
+    cin >> user_article;
+    search (Hash_Table, user_article);
+    row_len(Hash_Table,array);
+    cout << endl;
+    for (int i=0; i<10; i++)
+        if (array[i]!=0)
+            cout << i<<" "<< array [i] << endl;
+    delete(Hash_Table);
+    return 0;}

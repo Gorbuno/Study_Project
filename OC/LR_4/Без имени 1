@@ -1,0 +1,87 @@
+#define _POSIX_C_SOURCE 200112L
+#include <sys/select.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+
+
+time_t t1,t2;
+
+void incatchr(int signum){
+   double diff=0;
+
+   time(&t2);
+   printf("\n\nThis is the signal handler\n");
+   printf("Signal received: %d (14 is SIGALRM) \n",signum);
+   printf("The pselect call was made at: \t%s\n",ctime(&t1));
+   printf("The SIGALRM was caught at:    \t%s\n",ctime(&t2));
+   diff = difftime(t2,t1);
+   if(diff <  10) {
+      printf("TEST FAILED!\n\n");
+   }
+   else{
+      printf("TEST PASSED!\n\n");
+   }
+}
+
+int main(void){
+   int fd[1], rc, nfds=3, fd1, fd2, fd3;
+   pid_t cpid, ppid;
+   fd_set fdsread;
+   struct sigaction action, info;
+   sigset_t pselect_set;  // сигнал 
+   struct timespec t;
+   time_t t3;
+
+   t.tv_sec=10;
+   t.tv_nsec=0;
+
+   FD_ZERO(&fdsread);
+
+   action.sa_handler = incatchr;
+   action.sa_flags = 0;
+   sigaction(SIGALRM,&action,&info);
+
+   sigemptyset(&pselect_set);
+   sigaddset(&pselect_set, SIGALRM);
+
+   fd1 = open("./testchd.txt",O_RDWR|O_CREAT);
+   fd2 = open("./testchd2.txt",O_RDWR|O_CREAT);
+   if((rc=pipe(fd)) != 0){
+      printf("Error in pipe\n");
+      return(-1);
+   }
+
+   FD_SET(fd[0],&fdsread);
+
+   if ((cpid = fork()) < 0){
+      printf("Fork error\n");
+      return(-1);
+   }
+   else{
+      if (cpid == 0){
+         fd3 = open("./testchd.txt",O_RDWR|O_CREAT);
+         printf("This is the child\n");
+         sleep(2);
+         ppid= getppid();
+         time(&t3);
+         printf("Child: Sending signal to the parent at: ");
+         printf("%s",ctime(&t3));
+         kill(ppid,SIGALRM);
+         sleep(3);
+         _exit(0);
+      }
+      else{
+         printf("Parent: Issuing pselect\n\n");
+         time(&t1);
+         if (pselect(nfds,&fdsread,NULL,NULL,&t,&pselect_set) == -1)
+            printf("Error in pselect\n");
+      }
+      close(fd[0]);
+   }
+
+   return 0;
+}

@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <time.h>
+
+int binarysearch(int a, long long int mass [], int n)
+{int low, high, middle;
+    low = 0;
+    high = n - 1;
+    while (low <= high)
+    {middle = (low + high) / 2;
+        if (a < mass[middle])
+            high = middle - 1;
+        else if (a > mass[middle])
+            low = middle + 1;
+        else
+            return middle;
+    } return -1;}
+int main () {
+    long long int* mass;
+    long long int n,l,i,j,min,number,k,b;
+    size_t t;
+    struct timeval t1,t2;
+    n = 10000;
+    l = 10000;
+    mass = (long long int*)malloc(l * sizeof(mass));
+    if (mass == NULL)
+    {printf("Error!\n");
+        return 1;}
+    t = time(NULL);
+    if (t == -1)
+    {printf("Error!\n");
+        return 1;}
+    srand(t);
+    for (i = 0; i < l; i ++) mass[i] = rand()%n;
+    printf("Unsorted array\n");
+    for (i = 0; i < 10; i ++) printf("%d\n", mass[i]);
+    printf("...");
+    for (i = l - 10; i < l; i ++) printf("%d\n", mass[i]);
+    printf("\n");
+    if (gettimeofday(&t1,NULL)==-1) {
+        printf("Error t1");
+        return 1;}
+    for (i = 0; i < l - 1; i ++)
+    {min = mass[i];
+        for (j = i + 1; j < l; j ++)
+        {if (mass[j] <= min)
+            {min = mass[j];
+                number = j;}}
+        mass[number] = mass[i];
+        mass[i] = min;}
+    if (gettimeofday(&t2,NULL)==-1)
+    {printf("Error t2");
+        return 1;}
+    printf("Sorted array\n");
+    for (i = 0; i < 10; i ++) printf("%d\n", mass[i]);
+    printf("...");
+    for (i = l - 10; i < l; i ++) printf("%d\n", mass[i]);
+    printf("\n");
+    printf("\nmilli second algorithm: %lld \n",((t2.tv_sec *1000000 + t2.tv_usec) - (t1.tv_sec * 1000000 + t1.tv_usec))/1000);
+    printf("What number should I find: ");
+    scanf("%d", &k);
+    b=binarysearch( k, mass, l);
+    if (b==-1) printf("NO RESULT");
+    else printf("\nPosition number: %d",b);
+    return 0;}
