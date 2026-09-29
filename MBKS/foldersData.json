@@ -1,0 +1,1 @@
+{"folders": {"folder1": "public", "folder3": "public", "topsecretfolder": "public", "ts": "topsecret", "ts\\ns1": "public", "ts\\ns1\\ns2": "public", "ns3": "public", "ts21\\s": "public", "ts21": "topsecret"}}
